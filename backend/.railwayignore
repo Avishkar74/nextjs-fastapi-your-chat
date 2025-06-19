@@ -1,0 +1,39 @@
+# Ignore frontend files
+package.json
+package-lock.json
+next.config.js
+tailwind.config.ts
+tsconfig.json
+postcss.config.js
+next-env.d.ts
+components.json
+vercel.json
+
+# Ignore frontend directories
+app/
+components/
+lib/
+public/
+images/
+.next/
+node_modules/
+
+# Ignore other project files
+.git/
+.gitignore
+README.md
+DEPLOYMENT.md
+deploy-backend.sh
+Dockerfile.railway
+LICENSE
+railway.toml
+supabase_vector_search.sql
+
+# Keep only backend files
+!*.py
+!requirements.txt
+!runtime.txt
+!Procfile
+!.env
+!render.yaml
+!nixpacks.toml

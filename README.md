@@ -1,61 +1,317 @@
-# Next.js + FastAPI: Chat with Your Website
+# GitHub Repository Chat App
 
-This application facilitates a chatbot by leveraging Next.js as the frontend and FastAPI as the backend, utilizing the power of LangChain for dynamic web interactions.
+A full-stack RAG (Retrieval-Augmented Generation) chat application that lets you have intelligent conversations with GitHub repositories. Index any public repository and chat with its codebase using advanced semantic search and AI-powered responses.
 
 ![Chatbot Interface](images/chatbot.png)
 
-## Features of the Hybrid App
+## 🚀 Features
 
-- **Web Interaction via LangChain**: Utilizes the latest LangChain version for effective interaction and information extraction from websites.
-- **Versatile Language Model Integration**: Offers compatibility with various models including GPT-4. Users can easily switch between models to suit their needs.
-- **User-Friendly Next.js Frontend**: The interface is intuitive and accessible for users of all technical backgrounds.
+- **Repository Indexing**: Automatically scrape and index any public GitHub repository
+- **Vector Search**: Semantic search through codebases using Google Gemini embeddings
+- **AI-Powered Chat**: Contextual responses powered by Gemini 2.0 Flash and LangChain
+- **Modern UI**: Beautiful, responsive chat interface built with Next.js and Tailwind CSS
+- **Session Management**: Persistent chat sessions with conversation history
+- **Fallback Search**: Text-based search when vector search fails
+- **Real-time Updates**: Live status updates and progress indicators
 
-## Operational Mechanics
+## 🏗️ Architecture
 
-The application integrates the Python/FastAPI server into the Next.js app under the `/api/` route. This is achieved through [`next.config.js` rewrites](https://github.com/digitros/nextjs-fastapi/blob/main/next.config.js), directing any `/api/:path*` requests to the FastAPI server located in the `/api` folder. Locally, FastAPI runs on `127.0.0.1:8000`, while in production, it operates as serverless functions on Vercel.
+### Frontend (Next.js + Tailwind CSS)
 
-## Setting Up the Application
+- Modern chat interface with session management
+- Repository management and indexing controls
+- Real-time status updates and error handling
+- Responsive design with dark/light theme support
 
-1. Install dependencies:
+### Backend (FastAPI + LangChain)
+
+- RESTful API with endpoints for indexing and chat
+- Advanced RAG system with vector similarity search
+- Google Gemini integration for embeddings and chat
+- Supabase integration for vector storage
+
+### Database (Supabase)
+
+- PostgreSQL with vector extension (pgvector)
+- Document storage with 768-dimensional embeddings
+- Optimized vector similarity search functions
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 14, React, Tailwind CSS, TypeScript
+- **Backend**: FastAPI, LangChain, Python 3.10+
+- **AI/ML**: Google Gemini 2.0 Flash, Gemini Embeddings
+- **Database**: Supabase (PostgreSQL + pgvector)
+- **Deployment**: Vercel (Frontend), Railway (Backend)
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.10+
+- Node.js 18+
+- Supabase account
+- Google AI API key
+
+### Backend Setup
+
+1. **Clone and navigate to backend**:
+
+   ```bash
+   cd backend
+   python -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+2. **Configure environment variables**:
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your actual values
+   ```
+
+3. **Start the backend**:
+
+   ```bash
+   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+### Frontend Setup
+
+1. **Install dependencies**:
+
    ```bash
    npm install
    ```
-2. Create a `.env` file with your OpenAI API key:
+
+2. **Configure environment**:
+
+   ```bash
+   # Create .env.local
+   NEXT_PUBLIC_API_URL=http://localhost:8000
    ```
-   OPENAI_API_KEY=[your-openai-api-key]
-   ```
-3. Start the development server:
+
+3. **Start the frontend**:
+
    ```bash
    npm run dev
    ```
-4. Access the application at [http://localhost:3000](http://localhost:3000). The FastAPI server runs on [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-For backend-only testing:
+4. **Access the application**: [http://localhost:3000](http://localhost:3000)
 
-```bash
-conda create --name nextjs-fastapi-your-chat python=3.10
-conda activate nextjs-fastapi-your-chat
-pip install -r requirements.txt
-uvicorn api.index:app --reload
+## 📚 API Endpoints
+
+- `GET /api/health` - Health check
+- `POST /api/index` - Index a GitHub repository
+- `POST /api/chat` - Chat with indexed repositories
+- `GET /api/docs-count` - Get document count
+- `DELETE /api/clear` - Clear all documents
+
+## 🗄️ Database Schema
+
+### Documents Table
+
+```sql
+CREATE TABLE documents (
+  id SERIAL PRIMARY KEY,
+  content TEXT NOT NULL,
+  metadata JSONB,
+  embedding VECTOR(768),
+  created_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
-## Maintaining Chat History (TODO List)
+## 📋 Environment Variables
 
-Options for preserving chat history include:
+### Backend (.env)
 
-- **Global Variable**: Simple but not ideal for scalability and consistency.
-- **In-Memory Database/Cache**: Scalable solutions like Redis for storing chat history.
-- **Database Storage**: Robust and persistent method, suitable for production environments.
+```env
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_anon_key
+GOOGLE_API_KEY=your_google_ai_api_key
+```
 
-## Understanding RAG Algorithms
+### Frontend (.env.local)
 
-RAG (Retrieval Augmented Generation) enhances language models with context retrieved from a custom knowledge base. The process involves fetching HTML documents, splitting them into chunks, and vectorizing these chunks using embedding models like OpenAI's. This vectorized data forms a vector store, enabling semantic searches based on user queries. The retrieved relevant chunks are then used as context for the language model, forming a comprehensive response to user inquiries.
+```env
+NEXT_PUBLIC_API_URL=your_backend_url
+```
 
-## Implementing Context Retrieval
+## 🔧 Development Status
 
-The `get_vectorstore_from_url` function extracts and processes text from a given URL, while `get_context_retriever_chain` forms a chain that retrieves context relevant to the entire conversation history. This pipeline approach ensures that responses are contextually aware and accurate.
+### ✅ Completed
+
+- Full RAG system implementation
+- Vector search with Gemini embeddings
+- Modern React frontend with session management
+- GitHub repository indexing
+- Supabase integration
+- Local development environment
+- Production build optimization
+
+### 🚧 In Progress
+
+- Railway backend deployment
+- Production environment configuration
+
+### 📋 Pending
+
+- Vercel frontend deployment
+- End-to-end production testing
+- Performance optimization
+
+## 🚀 Deployment
+
+### Backend (Railway)
+
+```bash
+cd backend
+railway login
+railway init
+railway up
+```
+
+### Frontend (Vercel)
+
+```bash
+npm run build
+vercel --prod
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+
+## 📖 Comprehensive Codebase Analysis
+
+### Project Overview
+
+This is a **full-stack AI chat application** that enables intelligent conversations with GitHub repositories using RAG (Retrieval Augmented Generation) technology. The system can index any public GitHub repository, convert the codebase into searchable embeddings, and provide contextual AI-powered responses about the code.
+
+### How It Works
+
+1. **Repository Indexing**: User provides a GitHub repository URL
+2. **Code Processing**: System clones and processes all repository files
+3. **Embedding Generation**: Code chunks are converted to 768-dimensional vectors using Google Gemini
+4. **Vector Storage**: Embeddings stored in Supabase with PostgreSQL + pgvector
+5. **Intelligent Chat**: When users ask questions:
+   - Questions are converted to embeddings
+   - Vector similarity search finds relevant code chunks
+   - AI generates comprehensive answers using retrieved context
+
+### Key Features Deep Dive
+
+#### 🤖 Advanced RAG System
+
+- **Enhanced Mode**: Conversation memory with multi-turn context awareness
+- **Basic Mode**: Stateless responses for quick queries
+- **Fallback Search**: Text-based search when vector search fails
+- **Smart Chunking**: Intelligent code segmentation preserving context
+
+#### 🔍 Vector Search Technology
+
+- **Semantic Understanding**: Goes beyond keyword matching
+- **Code Context Awareness**: Understands relationships between functions, classes, and modules
+- **Multi-language Support**: Works with any programming language
+- **Relevance Scoring**: Returns most contextually relevant code snippets
+
+#### 💬 Chat Interface
+
+- **Real-time Responses**: Live streaming of AI responses
+- **Session Management**: Persistent conversation history
+- **Code Highlighting**: Syntax highlighting for code snippets in responses
+- **Progress Indicators**: Real-time indexing progress and status updates
+
+### Technical Architecture
+
+#### Frontend (Next.js)
+
+```text
+app/
+├── page.tsx                 # Main chat interface
+├── layout.tsx              # App layout and providers
+├── globals.css             # Global styles and Tailwind config
+└── constants.ts            # Application constants
+
+components/
+├── ui/                     # Reusable UI components (button, input, etc.)
+├── heading.tsx             # Page headers and titles
+├── loader.tsx              # Loading animations
+└── tool-card.tsx           # Feature showcase cards
+```
+
+#### Backend (FastAPI)
+
+```text
+backend/
+├── main.py                 # FastAPI application entry point
+├── enhanced_rag_system.py  # Core RAG implementation
+├── rag_simple.py           # Basic RAG functionality
+├── debug_*.py              # Development and testing utilities
+└── test_*.py               # Test suites
+```
+
+#### Core Components
+
+**RAG System (`enhanced_rag_system.py`)**:
+
+- `EnhancedRAGSystem` class with conversation memory
+- Vector similarity search with configurable thresholds
+- Multi-model AI support (Gemini 2.0 Flash)
+- Automatic fallback mechanisms
+
+**GitHub Integration**:
+
+- Repository cloning and file processing
+- Intelligent file filtering (excludes binaries, large files)
+- Code chunking with overlap for context preservation
+- Metadata extraction for better search relevance
+
+**Database Layer (Supabase)**:
+
+- PostgreSQL with pgvector extension
+- 768-dimensional embedding storage
+- Optimized similarity search functions
+- JSONB metadata for flexible document properties
+
+### API Endpoints Detail
+
+- `POST /api/index`: Repository indexing with progress tracking
+- `POST /api/chat`: Intelligent chat with context awareness
+- `GET /api/health`: System health and status monitoring
+- `GET /api/docs-count`: Document count and statistics
+- `DELETE /api/clear`: Database cleanup and reset
+
+### Development Features
+
+#### Testing & Debugging
+
+- Comprehensive test suites for all major components
+- Debug utilities for embedding analysis
+- Vector search testing and optimization
+- End-to-end integration testing
+
+#### Error Handling
+
+- Graceful degradation when services are unavailable
+- Comprehensive error logging and monitoring
+- User-friendly error messages
+- Automatic retry mechanisms
+
+#### Performance Optimization
+
+- Efficient vector similarity search
+- Smart caching of embeddings
+- Optimized database queries
+- Lazy loading of large repositories
+
+### Use Cases
+
+1. **Code Understanding**: "Explain how authentication works in this app"
+2. **Feature Discovery**: "What testing frameworks are used here?"
+3. **Architecture Analysis**: "Show me the database schema and relationships"
+4. **Bug Investigation**: "Find potential security vulnerabilities"
+5. **Documentation**: "Generate documentation for the API endpoints"
+
+This application essentially creates a "ChatGPT for your codebase" experience, making it easy for developers to understand, explore, and get insights about any GitHub repository through natural language conversations.
 
 ## Inspiration and References
-
-- [chat-with-websites](https://github.com/alejandro-ao/chat-with-websites)
-- [next13-ai-saas](https://github.com/AntonioErdeljac/next13-ai-saas)
