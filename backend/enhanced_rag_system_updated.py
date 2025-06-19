@@ -343,14 +343,18 @@ Please respond using the conversation history to maintain consistency and the re
                     'total_results': search_results.get('total', 0)
                 }
             )
-              # Prepare sources for response - return as strings, not dictionaries
+            
+            # Prepare sources for response
             sources = []
             for doc in relevant_docs[:3]:  # Top 3 sources
                 source_preview = doc.get("content", "")[:200]
                 if len(source_preview) < len(doc.get("content", "")):
                     source_preview += "..."
-                # Return as string instead of dictionary to match API expectations
-                sources.append(source_preview)
+                sources.append({
+                    'content': source_preview,
+                    'file_path': doc.get('file_path', 'Unknown'),
+                    'repository': doc.get('repository', 'Unknown')
+                })
             
             # Get session info
             session_info = self.conversation_manager.get_session_info(session_id)

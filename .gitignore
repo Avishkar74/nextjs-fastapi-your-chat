@@ -145,3 +145,7 @@ checkpoints/
 repos/
 cloned_repos/
 temp_repos/
+
+# Documentation and Understanding Files
+understanding/
+understandings/
