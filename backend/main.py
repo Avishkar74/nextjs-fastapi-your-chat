@@ -14,21 +14,32 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Import our RAG system - try full system first
+# Import our RAG system - try enhanced system first, then fall back to original
+enhanced_rag_system = None
+rag_system = None
+
+try:
+    from enhanced_rag_system import EnhancedRAGSystem
+    logger.info("Enhanced RAG system available")
+    ENHANCED_AVAILABLE = True
+except Exception as e:
+    logger.warning(f"Enhanced RAG system not available: {e}")
+    ENHANCED_AVAILABLE = False
+
 try:
     from rag_system import RAGSystem
-    logger.info("Using full RAG system")
+    logger.info("Original RAG system available")
+    ORIGINAL_AVAILABLE = True
 except Exception as e:
-    logger.warning(f"Full RAG system not available, using simplified version: {e}")
-    from rag_simple import RAGSystem
-    logger.info("Using simplified RAG system")
+    logger.warning(f"Original RAG system not available: {e}")
+    ORIGINAL_AVAILABLE = False
 
-# Global RAG system instance
-rag_system = None
+# Global RAG system instances
 
 # Pydantic models
 class ChatRequest(BaseModel):
     message: str
+    session_id: Optional[str] = None  # Add session support
     
 class IndexRequest(BaseModel):
     github_url: str
@@ -36,17 +47,28 @@ class IndexRequest(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     sources: Optional[List[str]] = []
+    session_id: Optional[str] = None  # Return session ID
+    conversation_length: Optional[int] = None  # Number of exchanges in conversation
+    conversation_length: Optional[int] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan"""
-    global rag_system
+    global rag_system, enhanced_rag_system
     try:
-        # Startup
-        rag_system = RAGSystem()
-        logger.info("RAG system initialized successfully")
+        # Startup - Initialize both systems if available
+        if ENHANCED_AVAILABLE:
+            enhanced_rag_system = EnhancedRAGSystem()
+            logger.info("Enhanced RAG system initialized successfully")
+        
+        if ORIGINAL_AVAILABLE:
+            rag_system = RAGSystem()
+            logger.info("Original RAG system initialized successfully")
+            
+        if not enhanced_rag_system and not rag_system:
+            logger.error("No RAG system could be initialized")
     except Exception as e:
-        logger.error(f"Failed to initialize RAG system: {e}")
+        logger.error(f"Failed to initialize RAG systems: {e}")
         # Don't raise error - let the app start and show helpful error messages
     
     yield
@@ -128,16 +150,71 @@ async def index_repository(request: IndexRequest):
 async def chat(request: ChatRequest):
     """Chat endpoint that uses RAG to answer questions"""
     try:
-        if not rag_system:
-            raise HTTPException(status_code=500, detail="RAG system not initialized")
+        # Temporarily use only the original system until enhanced is fixed
+        if rag_system:
+            logger.info(f"Processing chat request with original system: {request.message}")
+            
+            if not request.message or not request.message.strip():
+                raise HTTPException(status_code=400, detail="Message cannot be empty")
+            
+            result = await rag_system.answer_question(request.message)
+            
+            return ChatResponse(
+                answer=result["answer"],
+                sources=result.get("sources", [])
+            )
+        else:
+            raise HTTPException(status_code=500, detail="RAG system not available")
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing chat request: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to process chat request: {str(e)}")
+
+@app.post("/api/enhanced-chat", response_model=ChatResponse)
+async def enhanced_chat(request: ChatRequest):
+    """Enhanced chat endpoint with conversation context and system instructions"""
+    try:
+        if not enhanced_rag_system:
+            raise HTTPException(status_code=500, detail="Enhanced RAG system not initialized")
         
         if not request.message or not request.message.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
         
-        logger.info(f"Processing chat request: {request.message}")
+        logger.info(f"Processing enhanced chat request: {request.message} (session: {request.session_id})")
         
-        # Get answer from RAG system
-        result = await rag_system.answer_question(request.message)
+        # Use enhanced system with conversation context
+        result = await enhanced_rag_system.chat_with_context(
+            request.message, 
+            request.session_id or "default-session"
+        )
+        
+        return ChatResponse(
+            answer=result["answer"],
+            sources=result.get("sources", []),
+            session_id=result.get("session_id"),
+            conversation_length=result.get("conversation_length")
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error processing enhanced chat request: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to process enhanced chat request: {str(e)}")
+
+@app.get("/api/session/{session_id}")
+async def get_session_info(session_id: str):
+    """Get information about a conversation session"""
+    try:
+        if enhanced_rag_system:
+            info = enhanced_rag_system.get_session_info(session_id)
+            return info
+        else:
+            return {"error": "Enhanced RAG system not available"}
+    except Exception as e:
+        logger.error(f"Error getting session info: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get session info: {str(e)}")
         
         return ChatResponse(
             answer=result["answer"],
