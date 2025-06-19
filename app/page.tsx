@@ -16,14 +16,14 @@ interface Message {
 }
 
 const ConversationPage = () => {
-  const [urlResponse, setUrlResponse] = useState("");
+  const [indexResponse, setIndexResponse] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const scrapeForm = useForm({
+  const indexForm = useForm({
     resolver: zodResolver(
       z.object({
-        url: z.string().url({ message: "Please enter a valid URL." }),
+        github_url: z.string().url({ message: "Please enter a valid GitHub URL." }),
       })
     ),
   });
@@ -35,35 +35,39 @@ const ConversationPage = () => {
     ),
   });
 
-  const onScrapeSubmit = async (data: any) => {
+  const onIndexSubmit = async (data: any) => {
     try {
-      console.log("Sending URL:", data.url);
-      const endpoint = `/api/scrape`;
+      console.log("Indexing GitHub repo:", data.github_url);
+      const endpoint = `http://localhost:8000/api/index`;
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url: data.url }),
+        body: JSON.stringify({ github_url: data.github_url }),
       });
 
       const json = await response.json();
       console.log(json);
-      setUrlResponse("URL successfully processed. Start your conversation.");
+      if (response.ok) {
+        setIndexResponse(`Repository indexed successfully! Processed ${json.documents_processed} documents.`);
+      } else {
+        setIndexResponse("Failed to index repository: " + (json.detail || "Unknown error"));
+      }
     } catch (error) {
-      console.error("Error scraping URL: ", error);
-      setUrlResponse("Failed to process URL.");
+      console.error("Error indexing repository: ", error);
+      setIndexResponse("Failed to index repository.");
     }
   };
 
   const onChatSubmit = async (data: any) => {
     setIsLoading(true);
     try {
-      const response = await axios.post("/api/chat", { message: data.message });
+      const response = await axios.post("http://localhost:8000/api/chat", { message: data.message });
       setMessages([
         ...messages,
         { role: "user", content: data.message },
-        { role: "bot", content: response.data },
+        { role: "bot", content: response.data.answer },
       ]);
     } catch (error) {
       console.error("Error in chat: ", error);
@@ -75,33 +79,33 @@ const ConversationPage = () => {
   return (
     <div>
       <Heading
-        title="Interactive Chatbot"
-        description="Engage in a conversation. Provide a URL for contextual responses."
+        title="RAG Chat with GitHub Repositories"
+        description="Index a GitHub repository and chat about its contents using AI."
       />
 
-      {/* URL Scrape Form */}
+      {/* GitHub Repository Index Form */}
       <div className="px-4 lg:px-8 mt-4">
-        <Form {...scrapeForm}>
+        <Form {...indexForm}>
           <form
-            onSubmit={scrapeForm.handleSubmit(onScrapeSubmit)}
+            onSubmit={indexForm.handleSubmit(onIndexSubmit)}
             className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2"
           >
             <FormField
-              name="url"
+              name="github_url"
               render={({ field }) => (
                 <FormItem className="col-span-12 lg:col-span-10">
                   <FormControl className="m-0 p-0">
-                    <Input {...field} placeholder="Enter URL to scrape" />
+                    <Input {...field} placeholder="Enter GitHub repository URL (e.g., https://github.com/user/repo)" />
                   </FormControl>
                 </FormItem>
               )}
             />
             <Button className="col-span-12 lg:col-span-2 w-full" type="submit">
-              Scrape URL
+              Index Repository
             </Button>
           </form>
         </Form>
-        {urlResponse && <p className="mt-4">{urlResponse}</p>}
+        {indexResponse && <p className="mt-4 text-sm text-gray-600">{indexResponse}</p>}
       </div>
 
       {/* Chat Interaction Form */}
@@ -137,7 +141,7 @@ const ConversationPage = () => {
           )}
           {
             messages.length === 0 &&
-              urlResponse === "" &&
+              indexResponse === "" &&
               !isLoading &&
               null /* This will not render anything */
           }

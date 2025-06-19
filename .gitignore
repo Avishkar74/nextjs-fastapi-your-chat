@@ -1,38 +1,147 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Environment Variables & Secrets
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+backend/.env
+backend/.env.local
+
+# Python Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.env/
+backend/venv/
+backend/env/
+
+# Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Python Testing & Coverage
+.coverage
+.pytest_cache/
+.tox/
+.nox/
+htmlcov/
+.coverage.*
+coverage.xml
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Temporary & Debug Files
 code_report.py
 custom_tree_and_files_corrected.txt
-# dependencies
+debug_*.py
+test_*.py
+*_backup.py
+*_fixed.py
+temp/
+tmp/
+
+# Node.js & Next.js
 /node_modules
 /.pnp
 .pnp.js
-
-# testing
 /coverage
-
-# next.js
 /.next/
 /out/
-
-# production
 /build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# local env files
-.env*.local
-
-# vercel
-.vercel
-
-# typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.pem
+
+# Logs
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Deployment
+.vercel
+.netlify
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# AI/ML Model Files
+*.model
+*.pkl
+*.joblib
+
+# Large Files & Data
+data/
+datasets/
+models/
+checkpoints/
+
+# Git Repositories (for cloned repos during indexing)
+repos/
+cloned_repos/
+temp_repos/
